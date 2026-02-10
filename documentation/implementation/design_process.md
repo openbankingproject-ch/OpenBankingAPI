@@ -34,32 +34,39 @@ classDiagram
 
     class ApiConfig {
         +PORT: int
-        +DB_URL: String
         +configure(app: Javalin)
     }
 
     %% Presentation Layer (Handlers/Controllers)
     class CustomerHandler {
         -CustomerService customerService
+        -AuthService authService
         +getAll(ctx: Context)
         +getOne(ctx: Context)
-        +create(ctx: Context)
-        +update(ctx: Context)
-        +delete(ctx: Context)
     }
 
     class RelationshipHandler {
         -RelationshipService relationshipService
+        -ConsentService consentService
         +getRelationships(ctx: Context)
-        +addRelationship(ctx: Context)
+    }
+
+    %% Security & Compliance Services
+    class AuthService {
+        +validateToken(token: String) UserPrincipal
+        +hasRole(principal: UserPrincipal, role: String) boolean
+    }
+
+    class ConsentService {
+        -ConsentRepository consentRepo
+        +hasActiveConsent(customerId: String, scope: String) boolean
+        +updateConsent(customerId: String, preferences: ConsentDTO)
     }
 
     %% Application Layer (Business Services)
     class CustomerService {
         -CustomerRepository customerRepo
-        -MappingService mapper
         +getCustomerDetails(id: String) CustomerResponse
-        +createCustomer(req: CreateCustomerRequest) CustomerResponse
     }
 
     class RelationshipService {
@@ -68,20 +75,21 @@ classDiagram
     }
 
     %% Persistence Layer (Infrastructure)
-    class CustomerRepository {
+      class CustomerRepository {
         <<interface>>
         +findById(id: String) CustomerEntity
         +save(customer: CustomerEntity)
         +findAll() List~CustomerEntity~
     }
-
-    class RelationshipRepository {
+    class RelationshipRepository { <<interface>> }
+    
+    class ConsentRepository {
         <<interface>>
-        +findByCustomerId(id: String) List~RelationshipEntity~
+        +findLatestByCustomerId(id: String) ConsentEntity
+        +save(consent: ConsentEntity)
     }
 
-    %% Data Transfer Objects (Records)
-    class CustomerResponse {
+        class CustomerResponse {
         <<record>>
         +String id
         +String fullName
@@ -110,11 +118,18 @@ classDiagram
     App --> ApiConfig : uses
     ApiConfig --> CustomerHandler : registers
     ApiConfig --> RelationshipHandler : registers
+    
+    %% Security Wiring
+  
+    RelationshipHandler --> AuthService : authenticates
+    RelationshipHandler --> ConsentService : verifies privacy
+    
     CustomerHandler --> CustomerService : delegates
     RelationshipHandler --> RelationshipService : delegates
+    CustomerHandler --> AuthService : authenticates
     CustomerService --> CustomerRepository : uses
     RelationshipService --> RelationshipRepository : uses
+    ConsentService --> ConsentRepository : uses
     CustomerService..> CustomerResponse : returns
     CustomerService..> CreateCustomerRequest : accepts
-    CustomerRepository..> CustomerEntity : manages
-```
+    CustomerRepository..> CustomerEntity : manages```
