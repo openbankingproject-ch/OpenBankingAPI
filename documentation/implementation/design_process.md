@@ -133,7 +133,7 @@ classDiagram
     CustomerService..> CustomerResponse : returns
     CustomerService..> CreateCustomerRequest : accepts
     CustomerRepository..> CustomerEntity : manages
-    ```
+```
 
 ### Roadmap
 
