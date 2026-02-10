@@ -1,5 +1,5 @@
 This file outlines and documents the architecture that was chosen for the Open-API. Why these decisions were made
-is documented in [[designprocess]].
+is documented in [Design Process](https://github.com/openbankingproject-ch/Open_API_Kundenbeziehung_V2.0/blob/main/documentation/implementation/design_process.md).
 
 ## Technologies
 The API will be written in **Java** with the JDK version being the LTS version 25 [OpenJDK](https://jdk.java.net/25/) 
